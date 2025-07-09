@@ -178,4 +178,7 @@ button:hover {
   opacity: 0.5;
   pointer-events: none;
 }
+html {
+  scroll-behavior: smooth;
+}
 
