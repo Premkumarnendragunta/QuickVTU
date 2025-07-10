@@ -181,4 +181,33 @@ button:hover {
 html {
   scroll-behavior: smooth;
 }
+/* Centered header with logo on top */
+.hero-header {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #0d1b2a;
+  color: #f3e8ff;
+}
 
+.site-logo {
+  height: 100px;
+  width: auto;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+
+.site-logo:hover {
+  transform: scale(1.05);
+}
+
+.title-block h1 {
+  font-size: 36px;
+  margin: 0;
+}
+
+.title-block p {
+  font-size: 16px;
+  margin-top: 8px;
+  color: #ccc;
+}
