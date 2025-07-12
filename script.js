@@ -1,6 +1,7 @@
 const stepsContainer = document.getElementById('steps-container');
+
 const resources = {
-  "3": {
+  "4": {
     "AIDS": {
       "DBMS": [
         {
@@ -29,9 +30,35 @@ const resources = {
           notes: "notes/3_aids_dbms_module5.pdf"
         }
       ],
-    },
-  },
-  // You can add other semesters, branches, subjects here...
+      "Discrete Mathematics": [
+        {
+          name: "Module 1: Fundamentals of logic",
+          video: "https://www.youtube.com/watch?v=SFyA_ExWhpM",
+          notes: "DBMS qp.pdf"
+        },
+        {
+          name: "Module 2: Properties of integers ",
+          video: "https://www.youtube.com/watch?v=Jz-hZT0mYk8",
+          notes: "notes/3_aids_dbms_module2.pdf"
+        },
+        {
+          name: "Module 3: Relations and functions",
+          video: "https://www.youtube.com/watch?v=Z_cY1BYu2q8",
+          notes: "notes/3_aids_dbms_module3.pdf"
+        },
+        {
+          name: "Module 4: Inclusion and exclusion Principle",
+          video: "https://www.youtube.com/watch?v=9Pzj7Aj25lw",
+          notes: "notes/3_aids_dbms_module4.pdf"
+        },
+        {
+          name: "Module 5: Introduction to groups Theory",
+          video: "https://www.youtube.com/watch?v=UrYLYV7WSHM",
+          notes: "notes/3_aids_dbms_module5.pdf"
+        }
+      ]
+    }
+  }
 };
 
 const semesters = [
@@ -47,24 +74,20 @@ const semesters = [
 
 const branches = ['CSE', 'AIML', 'AIDS', 'CSDS', 'CIV', 'MECH'];
 
-const subjects = {
-  'Chemistry Cycle': ['Chemistry Basics', 'Lab Work', 'Scientific Method', 'Organic Chemistry'],
-  'Physics Cycle': ['Physics Basics', 'Lab Work', 'Mechanics', 'Electromagnetism'],
-  '3': ['Data Structures', 'Mathematics III', 'Digital Logic', 'Communication Systems', 'DBMS'],  // Added DBMS for 3rd sem
-  '4': ['DBMS', 'Operating Systems', 'Theory of Computation', 'Computer Networks'],
-  '5': ['Artificial Intelligence', 'Software Engineering', 'Web Technologies', 'Compiler Design'],
-  '6': ['Machine Learning', 'Cloud Computing', 'Cyber Security', 'Big Data Analytics'],
-  '7': ['Elective 1', 'Elective 2', 'Project Work', 'Seminar'],
-  '8': ['Elective 3', 'Elective 4', 'Project Finalization', 'Internship'],
-};
-
 let selections = {
   semester: null,
   branch: null,
-  subject: null,
+  subject: null
 };
 
-function createStep(title, options, onSelect, allowBack = true) {
+// ⛔ Remove all steps after a certain index (used to keep only the current level)
+function removeStepsAfter(index) {
+  while (stepsContainer.children.length > index + 1) {
+    stepsContainer.removeChild(stepsContainer.lastChild);
+  }
+}
+
+function createStep(title, options, onSelect, onBack = null) {
   const stepDiv = document.createElement('div');
   stepDiv.classList.add('step');
 
@@ -85,36 +108,20 @@ function createStep(title, options, onSelect, allowBack = true) {
     card.className = 'card';
     card.textContent = typeof opt === 'string' ? opt : opt.name;
     card.style.userSelect = 'none';
+
     card.onclick = () => {
       onSelect(typeof opt === 'string' ? opt : opt.id || opt.name);
       selectedInfo.textContent = `Selected: ${card.textContent}`;
-      Array.from(grid.children).forEach((c) => c.classList.add('disabled'));
-      card.classList.remove('disabled');
     };
+
     grid.appendChild(card);
   });
 
-  if (allowBack) {
+  if (onBack) {
     const backBtn = document.createElement('button');
     backBtn.textContent = 'Back';
     backBtn.style.marginTop = '15px';
-    backBtn.onclick = () => {
-      while (stepsContainer.lastChild !== stepDiv) {
-        stepsContainer.removeChild(stepsContainer.lastChild);
-      }
-      stepsContainer.removeChild(stepDiv);
-
-      if (title === 'Select Branch') {
-        selections.branch = null;
-        selections.subject = null;
-      } else if (title === 'Select Subject') {
-        selections.subject = null;
-      } else if (title === 'Select Semester') {
-        selections.semester = null;
-        selections.branch = null;
-        selections.subject = null;
-      }
-    };
+    backBtn.onclick = onBack;
     stepDiv.appendChild(backBtn);
   }
 
@@ -132,29 +139,51 @@ function showSemesters() {
   clearSteps();
   const step = createStep('Select Semester', semesters, (sem) => {
     selections.semester = sem;
+    removeStepsAfter(0);
     showBranches();
-  }, false);
+  });
   stepsContainer.appendChild(step);
 }
 
 function showBranches() {
   const step = createStep('Select Branch', branches, (branch) => {
     selections.branch = branch;
+    removeStepsAfter(1);
     showSubjects();
+  }, () => {
+    selections.branch = null;
+    removeStepsAfter(0);
   });
+
+  if (stepsContainer.children.length > 1) {
+    removeStepsAfter(0);
+  }
   stepsContainer.appendChild(step);
 }
 
 function showSubjects() {
-  const subjectList = subjects[selections.semester] || ['Subject 1', 'Subject 2', 'Subject 3', 'Subject 4'];
+  let subjectList = [];
+  const availableSubjects = resources[selections.semester]?.[selections.branch];
+  subjectList = availableSubjects ? Object.keys(availableSubjects) : ['Subject 1', 'Subject 2'];
+
   const step = createStep('Select Subject', subjectList, (subject) => {
     selections.subject = subject;
+    removeStepsAfter(2);
     showModules();
+  }, () => {
+    selections.subject = null;
+    removeStepsAfter(1);
   });
+
+  if (stepsContainer.children.length > 2) {
+    removeStepsAfter(1);
+  }
+
   stepsContainer.appendChild(step);
 }
 
 function showModules() {
+  removeStepsAfter(2);
   const stepDiv = document.createElement('div');
   stepDiv.classList.add('step');
 
@@ -165,22 +194,15 @@ function showModules() {
   const grid = document.createElement('div');
   grid.className = 'card-grid module-grid';
 
-  // Get modules data from resources object
-  let modulesData = [];
-  try {
-    modulesData = resources[selections.semester][selections.branch][selections.subject];
-  } catch (e) {
-    modulesData = [];
-  }
+  const modulesData = resources[selections.semester]?.[selections.branch]?.[selections.subject] || [];
 
-  if (modulesData && modulesData.length > 0) {
+  if (modulesData.length > 0) {
     modulesData.forEach(mod => {
       const card = document.createElement('div');
       card.className = 'card';
-
       card.innerHTML = `
-        ${mod.name} <br>
-        <a href="${mod.video}" target="_blank" rel="noopener noreferrer">📹 Video</a> |
+        ${mod.name}<br>
+        <a href="${mod.video}" target="_blank">📹 Video</a> |
         <a href="${mod.notes}" download>📄 Notes</a>
       `;
       grid.appendChild(card);
@@ -195,8 +217,9 @@ function showModules() {
   backBtn.textContent = 'Back';
   backBtn.style.marginTop = '15px';
   backBtn.onclick = () => {
-    stepsContainer.removeChild(stepDiv);
     selections.subject = null;
+    removeStepsAfter(1);
+    showSubjects();
   };
   stepDiv.appendChild(backBtn);
 
@@ -213,5 +236,5 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Initialize the app
+// Start
 resetAll();
