@@ -80,7 +80,7 @@ let selections = {
   subject: null
 };
 
-// ⛔ Remove all steps after a certain index (used to keep only the current level)
+// Remove all steps after a certain index (used to keep only the current level)
 function removeStepsAfter(index) {
   while (stepsContainer.children.length > index + 1) {
     stepsContainer.removeChild(stepsContainer.lastChild);
@@ -135,6 +135,15 @@ function clearSteps() {
   selections = { semester: null, branch: null, subject: null };
 }
 
+// Renamed and modified to scroll to the bottom of the container
+function scrollToBottom() {
+  // Scrolls the window to the bottom of the stepsContainer
+  window.scrollTo({
+    top: stepsContainer.scrollHeight,
+    behavior: 'smooth'
+  });
+}
+
 function showSemesters() {
   clearSteps();
   const step = createStep('Select Semester', semesters, (sem) => {
@@ -143,6 +152,7 @@ function showSemesters() {
     showBranches();
   });
   stepsContainer.appendChild(step);
+  scrollToBottom(); // Call to scroll to the bottom
 }
 
 function showBranches() {
@@ -159,6 +169,7 @@ function showBranches() {
     removeStepsAfter(0);
   }
   stepsContainer.appendChild(step);
+  scrollToBottom(); // Call to scroll to the bottom
 }
 
 function showSubjects() {
@@ -180,6 +191,7 @@ function showSubjects() {
   }
 
   stepsContainer.appendChild(step);
+  scrollToBottom(); // Call to scroll to the bottom
 }
 
 function showModules() {
@@ -224,16 +236,13 @@ function showModules() {
   stepDiv.appendChild(backBtn);
 
   stepsContainer.appendChild(stepDiv);
+  scrollToBottom(); // Call to scroll to the bottom
 }
 
 function resetAll() {
   clearSteps();
   showSemesters();
-  scrollToTop();
-}
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToBottom(); // Call to scroll to the bottom on initial load
 }
 
 // Start
